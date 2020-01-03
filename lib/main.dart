@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-import './models/transaction.dart';
+import "./widgets/new_transaction.dart";
+import "./widgets/transaction_list.dart";
+import "./models/transaction.dart";
 
 void main() => runApp(MyApp());
 
@@ -9,124 +10,112 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter App',
+      title: 'Personal Expenses',
+      theme: ThemeData(
+          primarySwatch: Colors.purple,
+          accentColor: Colors.amber,
+          brightness: Brightness.light,
+          canvasColor: Colors.cyan,
+          // fontFamily: 'QuickSand',
+          textTheme: ThemeData.light().textTheme.copyWith(
+                  title: TextStyle(
+                fontFamily: 'OpenSans',
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              )),
+          appBarTheme: AppBarTheme(
+              textTheme: ThemeData.light().textTheme.copyWith(
+                      title: TextStyle(
+                    fontFamily: 'OpenSans',
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  )))),
       home: MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  String titleInput, amountInput;
-  final List<Transaction> transactions = [
-    Transaction(
-      id: "1",
-      title: "New Shoes",
-      amount: 60.99,
-      date: DateTime.now(),
-    ),
-    Transaction(
-      id: "2",
-      title: "New socks",
-      amount: 10.99,
-      date: DateTime.now(),
-    )
+class MyHomePage extends StatefulWidget {
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final List<Transaction> _userTransactions = [
+    // Transaction(
+    //   id: "1",
+    //   title: "New Shoes",
+    //   amount: 60.99,
+    //   date: DateTime.now(),
+    // ),
+    // Transaction(
+    //   id: "2",
+    //   title: "New socks",
+    //   amount: 10.99,
+    //   date: DateTime.now(),
+    // )
   ];
+
+  void _addNewTransaction(String title, double amount) {
+    final newTx = Transaction(
+      title: title,
+      amount: amount,
+      date: DateTime.now(),
+      id: DateTime.now().toString(),
+    );
+    setState(() {
+      _userTransactions.add(newTx);
+    });
+  }
+
+  void _startAddNewTransaction(BuildContext ctx) {
+    showModalBottomSheet(
+      context: ctx,
+      builder: (_) {
+        return NewTransaction(_addNewTransaction);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Flutter App"),
-        ),
-        body: Column(
+      appBar: AppBar(
+        title: Text("Personal Expenses"),
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () => _startAddNewTransaction(context),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Container(
               width: double.infinity,
               child: Card(
-                color: Colors.blue,
-                child: Text("CHART!"),
+                color: Theme.of(context).primaryColor,
+                child: Text(
+                  "CHART!",
+                  style: TextStyle(
+                    color: Theme.of(context).accentColor,
+                  ),
+                ),
                 elevation: 5,
               ),
             ),
-            Card(
-              margin: EdgeInsets.only(right: 10, left: 10),
-              child: Container(
-                margin: EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: <Widget>[
-                    TextField(
-                      decoration: InputDecoration(labelText: 'Title'),
-                      onChanged: (value) {
-                        titleInput = value;
-                      },
-                    ),
-                    TextField(
-                      decoration: InputDecoration(labelText: 'Amount'),
-                      onChanged: (value) {
-                        amountInput = value;
-                      },
-                    ),
-                    FlatButton(
-                      child: Text("Add Transaction"),
-                      textColor: Colors.purple,
-                      onPressed: () {
-                        print(titleInput + amountInput);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(left: 10, right: 10),
-              child: Column(
-                children: transactions.map((tx) {
-                  return Card(
-                    child: Row(
-                      children: <Widget>[
-                        Container(
-                          margin: EdgeInsets.symmetric(
-                            vertical: 20,
-                            horizontal: 15,
-                          ),
-                          decoration: BoxDecoration(
-                              border: Border.all(
-                            color: Colors.purple,
-                            width: 2,
-                          )),
-                          padding: EdgeInsets.all(10),
-                          child: Text(
-                            '\$ ${tx.amount}',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20,
-                                color: Colors.purple),
-                          ),
-                        ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              tx.title,
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              DateFormat("dd - MM - yyyy EEEE").format(tx.date),
-                              style: TextStyle(
-                                  fontSize: 12, color: Colors.blueGrey),
-                            ),
-                          ],
-                        )
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            )
+            TransactionList(_userTransactions)
           ],
-        ));
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () => _startAddNewTransaction(context),
+      ),
+    );
   }
 }
